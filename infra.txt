@@ -1,3 +1,0 @@
-### create cluster using eksctl ###
-
-eksctl create cluster -f infra.yaml
