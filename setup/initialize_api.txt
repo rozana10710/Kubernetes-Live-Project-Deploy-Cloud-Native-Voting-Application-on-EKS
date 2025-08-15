@@ -1,0 +1,32 @@
+API Setup
+
+Create GO API deployment by running the following command:
+
+kubectl apply -f api-deployment.yaml
+Expose API deployment through service using the following command:
+
+kubectl expose deploy api \
+ --name=api \
+ --type=LoadBalancer \
+ --port=80 \
+ --target-port=8080
+Next set the environment variable:
+
+{
+API_ELB_PUBLIC_FQDN=$(kubectl get svc api -ojsonpath="{.status.loadBalancer.ingress[0].hostname}")
+until nslookup $API_ELB_PUBLIC_FQDN >/dev/null 2>&1; do sleep 2 && echo waiting for DNS to propagate...; done
+curl $API_ELB_PUBLIC_FQDN/ok
+echo
+}
+Test and confirm that the API route URL /languages, and /languages/{name} endpoints can be called successfully. In the terminal run any of the following commands:
+
+curl -s $API_ELB_PUBLIC_FQDN/languages | jq .
+curl -s $API_ELB_PUBLIC_FQDN/languages/go | jq .
+curl -s $API_ELB_PUBLIC_FQDN/languages/java | jq .
+curl -s $API_ELB_PUBLIC_FQDN/languages/nodejs | jq .
+If everything works fine, go ahead with Frontend setup.
+
+{
+API_ELB_PUBLIC_FQDN=$(kubectl get svc api -ojsonpath="{.status.loadBalancer.ingress[0].hostname}")
+echo API_ELB_PUBLIC_FQDN=$API_ELB_PUBLIC_FQDN
+}

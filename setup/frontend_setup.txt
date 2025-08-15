@@ -1,0 +1,31 @@
+Frontend setup
+
+Create the Frontend Deployment resource. In the terminal run the following command:
+
+kubectl apply -f frontend-deployment.yaml
+Create a new Service resource of LoadBalancer type. In the terminal run the following command:
+
+kubectl expose deploy frontend \
+ --name=frontend \
+ --type=LoadBalancer \
+ --port=80 \
+ --target-port=8080
+Confirm that the Frontend ELB is ready to recieve HTTP traffic. In the terminal run the following command:
+
+{
+FRONTEND_ELB_PUBLIC_FQDN=$(kubectl get svc frontend -ojsonpath="{.status.loadBalancer.ingress[0].hostname}")
+until nslookup $FRONTEND_ELB_PUBLIC_FQDN >/dev/null 2>&1; do sleep 2 && echo waiting for DNS to propagate...; done
+curl -I $FRONTEND_ELB_PUBLIC_FQDN
+}
+Generate the Frontend URL for browsing. In the terminal run the following command:
+
+echo http://$FRONTEND_ELB_PUBLIC_FQDN
+Test the full end-to-end cloud native application
+
+Using your local workstation's browser - browse to the URL created in the previous output.
+
+After the voting application has loaded successfully, vote by clicking on several of the +1 buttons, this will generate AJAX traffic which will be sent back to the API via the API's assigned ELB.
+
+Query the MongoDB database directly to observe the updated vote data. In the terminal execute the following command:
+
+kubectl exec -it mongo-0 -- mongo langdb --eval "db.languages.find().pretty()"

@@ -1,0 +1,21 @@
+### create cluster using eksctl ###
+
+eksctl create cluster -f infra.yaml
+
+
+### give IAM user eks access policy ###
+
+aws eks associate-access-policy \
+  --cluster-name clusterNew \
+  --principal-arn arn:aws:iam::701109631751:user/eks-user \
+  --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy
+
+### change context to access the cluster ###
+
+aws eks update-kubeconfig --name clusterNew --region us-east-1
+
+
+### make sure that the worker nodes have permissions to provision the addons, example: EBS addons
+aws iam attach-role-policy \
+    --role-name eksctl-clusterNew-nodegroup-worker-NodeInstanceRole-qKRD1igIi8Ih \
+    --policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy
